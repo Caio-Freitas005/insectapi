@@ -9,4 +9,4 @@ This folder is the working directory of the data pipeline.
 2. Download DarwinCore Archive (DwC-A) file. 
 3. Extract the zip file.
 4. Copy only the 'taxon.txt' and 'vernacularname.txt' files into the folder. 
-5. Run the extraction Docker container.
+5. Run the script etl_insecta.py.
