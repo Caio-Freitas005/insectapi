@@ -193,7 +193,7 @@ def extract_ctfb_data() -> None:
     df_insecta.to_parquet(output_parquet, index=False)
     df_insecta.to_csv(output_csv, index=False)
 
-    print(f"File '{output_parquet.name}' successfully saved!\n")
+    print(f"Files '{output_parquet.name}' and '{output_csv} successfully saved!\n")
     print("--- Processing ended successfully! ---")
 
 
