@@ -1,8 +1,10 @@
+import os
 from pathlib import Path
 from typing import Any
 
 import numpy as np
 import pandas as pd
+from huggingface_hub import HfApi
 
 # Global Constants for translations
 RANK_TRANSLATION = {
@@ -188,12 +190,31 @@ def extract_ctfb_data() -> None:
     # Step 4: Final cleanup to ensure no 'nan' strings ruin the JSON later
     df_insecta = df_insecta.replace("nan", np.nan)
 
-    # Step 5: Save the definitive file
+    # Step 5: Save the definitive local file
     print(f"Saving Dataset with {len(df_insecta)} rows...")
     df_insecta.to_parquet(output_parquet, index=False)
     df_insecta.to_csv(output_csv, index=False)
 
     print(f"Files '{output_parquet.name}' and '{output_csv.name} successfully saved!\n")
+
+    # Step 6: Upload .parquet to Hugging Face repo
+    hf_token = os.getenv("HF_TOKEN")
+    hf_repo = "CaioFreitas05/br_insecta"
+
+    if hf_token:
+        print(f"Uploading '{output_parquet.name}' to Hugging Face ({hf_repo})...")
+        try:
+            api = HfApi(token=hf_token)
+            api.upload_file(
+                path_or_fileobj=str(output_parquet),
+                path_in_repo="insects.parquet",
+                repo_id=hf_repo,
+                repo_type="dataset",
+            )
+            print("Upload successfully finished!")
+        except Exception as e:
+            print(f"Error while uploading to Hugging Face: {e}")
+
     print("--- Processing ended successfully! ---")
 
 
