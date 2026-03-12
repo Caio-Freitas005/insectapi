@@ -1,9 +1,10 @@
 from pathlib import Path
 from typing import Any
 
+import numpy as np
 import pandas as pd
 
-# Global Constant for translations
+# Global Constants for translations
 RANK_TRANSLATION = {
     "CLASSE": "CLASS",
     "SUB_CLASSE": "SUBCLASS",
@@ -22,16 +23,21 @@ RANK_TRANSLATION = {
     "SUB_ESPECIE": "SUBSPECIES",
 }
 
+LANGUAGE_TRANSLATION = {
+    "PORTUGUES": "pt",
+    "INGLES": "en",
+    "ESPANHOL": "es",
+    "FRANCES": "fr",
+}
 
-def process_taxons(data_dir: Path) -> list[str]:
+
+def process_taxons(data_dir: Path) -> pd.DataFrame:
     """Extracts, cleans, and translates taxonomic data for the Insecta class."""
     taxon_file = data_dir / "taxon.txt"
-    output_parquet = data_dir / "insects_taxons.parquet"
-    output_csv = data_dir / "insects_taxons.csv"
 
     if not taxon_file.exists():
         print(f"Error: The file '{taxon_file}' was not found.")
-        return []
+        return pd.DataFrame()
 
     taxon_columns = ["id", "scientificName", "taxonRank", "class", "taxonomicStatus"]
     taxon_dtypes: dict[str, str | Any] = {
@@ -52,7 +58,7 @@ def process_taxons(data_dir: Path) -> list[str]:
         )
     except Exception as e:
         print(f"Failed to read '{taxon_file}': {e}")
-        return []
+        return pd.DataFrame()
 
     print("Filtering Insecta class and accepted names...")
 
@@ -73,29 +79,20 @@ def process_taxons(data_dir: Path) -> list[str]:
 
     print(f"Total insects found: {len(df_insecta)}")
 
-    df_insecta.to_parquet(output_parquet, index=False)
-    df_insecta.to_csv(output_csv, index=False)
-    print(
-        "Files 'insects_taxons.parquet' and 'insects_taxons.csv' successfully saved!\n"
-    )
-
-    # Return the extracted IDs to be used by the vernacular names function
-    return df_insecta["id"].tolist()
+    return df_insecta
 
 
-def process_vernacular_names(data_dir: Path, insects_ids: list[str]) -> None:
+def process_vernacular_names(data_dir: Path, insects_ids: list[str]) -> pd.DataFrame:
     """Extracts and cleans vernacular names matching the provided insect IDs."""
     if not insects_ids:
         print("No insect IDs provided. Skipping vernacular names processing.")
-        return
+        return pd.DataFrame()
 
     vernacular_file = data_dir / "vernacularname.txt"
-    output_parquet = data_dir / "insects_vernacular_names.parquet"
-    output_csv = data_dir / "insects_vernacular_names.csv"
 
     if not vernacular_file.exists():
         print(f"Error: The file '{vernacular_file}' was not found. Skipping.")
-        return
+        return pd.DataFrame()
 
     vernacular_columns = ["id", "vernacularName", "language"]
     vernacular_dtypes: dict[str, str | Any] = {
@@ -114,7 +111,7 @@ def process_vernacular_names(data_dir: Path, insects_ids: list[str]) -> None:
         )
     except Exception as e:
         print(f"Failed to read '{vernacular_file}': {e}")
-        return
+        return pd.DataFrame()
 
     print("Extracting and cleaning vernacular names for insects...")
     df_vernacular_insecta = (
@@ -124,15 +121,38 @@ def process_vernacular_names(data_dir: Path, insects_ids: list[str]) -> None:
     )
 
     # Cleaning and type casting
-    df_vernacular_insecta = df_vernacular_insecta.fillna("").astype(str)
+    df_vernacular_insecta = df_vernacular_insecta.astype(str)
+
+    # Clean dirty data
+    df_vernacular_insecta["vernacularName"] = df_vernacular_insecta[
+        "vernacularName"
+    ].str.replace(r"^\d+\.\s*", "", regex=True)
+
+    print("Traslating and grouping names...")
+
+    # Translate language to ISO acronym
+    df_vernacular_insecta["language"] = df_vernacular_insecta["language"].replace(
+        LANGUAGE_TRANSLATION
+    )
+
+    # Create column with normalized name and language
+    df_vernacular_insecta["name_with_lang"] = (
+        df_vernacular_insecta["vernacularName"]
+        + " ("
+        + df_vernacular_insecta["language"]
+        + ")"
+    )
+
+    # Group by id
+    df_grouped = (
+        df_vernacular_insecta.groupby("id")["name_with_lang"]
+        .apply(list)
+        .reset_index(name="vernacularNames")
+    )
 
     print(f"Total vernacular names found: {len(df_vernacular_insecta)}")
 
-    df_vernacular_insecta.to_parquet(output_parquet, index=False)
-    df_vernacular_insecta.to_csv(output_csv, index=False)
-    print(
-        "Files 'insects_vernacular_names.parquet' and 'insects_vernacular_names.csv' successfully saved!\n"
-    )
+    return df_grouped
 
 
 def extract_ctfb_data() -> None:
@@ -140,13 +160,40 @@ def extract_ctfb_data() -> None:
     print("--- Starting Data Processing (InsectAPI) ---\n")
 
     data_dir = Path("datasets")
+    output_parquet = data_dir / "insects.parquet"
+    output_csv = data_dir / "insects.csv"
 
-    # Step 1: Process Taxons and get the list of valid insect IDs
-    insects_ids = process_taxons(data_dir)
+    # Step 1: Process taxons
+    df_taxons = process_taxons(data_dir)
 
-    # Step 2: Process Vernacular Names using the IDs from Step 1
-    process_vernacular_names(data_dir, insects_ids)
+    if df_taxons.empty:
+        print("Process aborted: No taxon data available.")
+        return
 
+    insects_ids = df_taxons["id"].tolist()
+
+    # Step 2: Process Vernacular Names using the IDs
+    df_vernacular = process_vernacular_names(data_dir, insects_ids)
+
+    # Step 3: (Left Join)
+    print("\nMerging Taxons and Vernacular Names...")
+    if not df_vernacular.empty:
+        df_insecta = pd.merge(df_taxons, df_vernacular, on="id", how="left")
+    else:
+        # Fallback case there isn't vernacular names
+        df_insecta = df_taxons.copy()
+        df_insecta["vernacularName"] = None
+        df_insecta["language"] = None
+
+    # Step 4: Final cleanup to ensure no 'nan' strings ruin the JSON later
+    df_insecta = df_insecta.replace("nan", np.nan)
+
+    # Step 5: Save the definitive file
+    print(f"Saving Dataset with {len(df_insecta)} rows...")
+    df_insecta.to_parquet(output_parquet, index=False)
+    df_insecta.to_csv(output_csv, index=False)
+
+    print(f"File '{output_parquet.name}' successfully saved!\n")
     print("--- Processing ended successfully! ---")
 
 
