@@ -1,10 +1,55 @@
 import os
+import urllib.request
+import zipfile
 from pathlib import Path
 from typing import Any
 
 import numpy as np
 import pandas as pd
 from huggingface_hub import HfApi
+
+CTFB_ZIP_URL = (
+    "https://ipt.jbrj.gov.br/jbrj/archive.do?r=catalogo_taxonomico_da_fauna_do_brasilI"
+)
+
+
+def download_and_extract_ctfb_files(data_dir: Path) -> None:
+    """Download the original ZIP folder and extract only the needed files."""
+    print(f"Dowloading files at: {CTFB_ZIP_URL}...")
+
+    zip_path = data_dir / "ctfb_data.zip"
+
+    # Step 1: ZIP Folder download
+    try:
+        req = urllib.request.Request(
+            CTFB_ZIP_URL, headers={"User-Agent": "Mozilla/5.0"}
+        )
+        with urllib.request.urlopen(req) as response, open(zip_path, "wb") as out_file:
+            out_file.write(response.read())
+        print("ZIP download finished!")
+    except Exception as e:
+        print(f"Error while downloading ZIP: {e}")
+        return
+
+    # Step 2: Extraction
+    print("Extracting files...")
+    try:
+        with zipfile.ZipFile(zip_path, "r") as zip_ref:
+            # Extract only taxon.txt and vernacularname.txt
+            for file in ["taxon.txt", "vernacularname.txt"]:
+                if file in zip_ref.namelist():
+                    zip_ref.extract(file, data_dir)
+                    print(f" - {file} extracted sucessfully.")
+                else:
+                    print(f"Warning: {file} not found.")
+    except zipfile.BadZipFile:
+        print("Error: the folder is not a valid ZIP.")
+    finally:
+        # Step 3: Delete the ZIP folder to not occupy memory unecessarily
+        if zip_path.exists():
+            zip_path.unlink()
+            print("Temporary folder removed.")
+
 
 # Global Constants for translations
 RANK_TRANSLATION = {
@@ -164,6 +209,9 @@ def extract_ctfb_data() -> None:
     data_dir = Path("datasets")
     output_parquet = data_dir / "insects.parquet"
     output_csv = data_dir / "insects.csv"
+
+    # Step 0: Download and extract raw data folder
+    download_and_extract_ctfb_files(data_dir)
 
     # Step 1: Process taxons
     df_taxons = process_taxons(data_dir)
