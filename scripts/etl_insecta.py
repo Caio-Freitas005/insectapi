@@ -11,7 +11,7 @@ from huggingface_hub import HfApi
 
 # Constants
 CTFB_ZIP_URL = (
-    "https://ipt.jbrj.gov.br/jbrj/archive.do?r=catalogo_taxonomico_da_fauna_do_brasilI"
+    "https://ipt.jbrj.gov.br/jbrj/archive.do?r=catalogo_taxonomico_da_fauna_do_brasil"
 )
 HF_REPO = "CaioFreitas05/br_insecta"
 
