@@ -119,4 +119,4 @@ async def search_insects(
     df_results = df[mask_scientific | mask_vernacular].head(20)
     results = format_dataframe(df_results)
 
-    return {"query:": q, "total": len(results), "results": results}
+    return {"query": q, "total": len(results), "results": results}
