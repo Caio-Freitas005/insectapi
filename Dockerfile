@@ -13,8 +13,6 @@ RUN uv sync --frozen --no-dev
 COPY api/ ./api/
 COPY scripts/ ./scripts/
 
-RUN mkdir -p datasets/
-
 # Fallback for Render Port
 ENV PORT=8000
 
