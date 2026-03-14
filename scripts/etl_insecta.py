@@ -5,7 +5,6 @@ import zipfile
 from pathlib import Path
 from typing import Any
 
-import numpy as np
 import pandas as pd
 from huggingface_hub import HfApi
 
@@ -14,6 +13,7 @@ CTFB_ZIP_URL = (
     "https://ipt.jbrj.gov.br/jbrj/archive.do?r=catalogo_taxonomico_da_fauna_do_brasil"
 )
 HF_REPO = "CaioFreitas05/br_insecta"
+DATASET_DIR = Path("datasets")
 
 RANK_TRANSLATION = {
     "CLASSE": "CLASS",
@@ -41,17 +41,17 @@ LANGUAGE_TRANSLATION = {
 }
 
 
-def download_and_extract_ctfb_files(data_dir: Path, debug_mode: bool) -> None:
+def download_and_extract_ctfb_files(debug_mode: bool) -> None:
     """Download the original ZIP folder and extract only the needed files."""
-    taxon_path = data_dir / "taxon.txt"
-    vernacular_path = data_dir / "vernacularname.txt"
+    taxon_path = DATASET_DIR / "taxon.txt"
+    vernacular_path = DATASET_DIR / "vernacularname.txt"
 
     if debug_mode and taxon_path.exists() and vernacular_path.exists():
         print("[DEBUG MODE] Files .txt found locally. Skipping download.")
         return
 
     print(f"Downloading files at: {CTFB_ZIP_URL}...")
-    zip_path = data_dir / "ctfb_data.zip"
+    zip_path = DATASET_DIR / "ctfb_data.zip"
 
     # Step 1: ZIP Folder download
     try:
@@ -71,7 +71,7 @@ def download_and_extract_ctfb_files(data_dir: Path, debug_mode: bool) -> None:
         with zipfile.ZipFile(zip_path, "r") as zip_ref:
             for file in ["taxon.txt", "vernacularname.txt"]:
                 if file in zip_ref.namelist():
-                    zip_ref.extract(file, data_dir)
+                    zip_ref.extract(file, DATASET_DIR)
                     print(f" - {file} extracted sucessfully.")
                 else:
                     print(f"Warning: {file} not found.")
@@ -84,9 +84,9 @@ def download_and_extract_ctfb_files(data_dir: Path, debug_mode: bool) -> None:
             print("Temporary folder removed.")
 
 
-def process_taxons(data_dir: Path) -> pd.DataFrame:
+def process_taxons() -> pd.DataFrame:
     """Extracts, cleans, and translates taxonomic data for the Insecta class."""
-    taxon_file = data_dir / "taxon.txt"
+    taxon_file = DATASET_DIR / "taxon.txt"
     if not taxon_file.exists():
         print(f"Error: The file '{taxon_file}' was not found.")
         return pd.DataFrame()
@@ -120,12 +120,12 @@ def process_taxons(data_dir: Path) -> pd.DataFrame:
     return df_insecta
 
 
-def process_vernacular_names(data_dir: Path, insects_ids: list[str]) -> pd.DataFrame:
+def process_vernacular_names(insects_ids: list[str]) -> pd.DataFrame:
     """Extracts and cleans vernacular names matching the provided insect IDs."""
     if not insects_ids:
         return pd.DataFrame()
 
-    vernacular_file = data_dir / "vernacularname.txt"
+    vernacular_file = DATASET_DIR / "vernacularname.txt"
     if not vernacular_file.exists():
         print(f"Warning: '{vernacular_file.name}' not found. Skipping.")
         return pd.DataFrame()
@@ -190,8 +190,6 @@ def merge_datasets(
         df_insecta = df_taxons.copy()
         df_insecta["vernacularNames"] = None
 
-    # Final cleanup to ensure no 'nan' strings ruin the JSON later
-    df_insecta = df_insecta.replace("nan", np.nan)
     return df_insecta
 
 
@@ -221,23 +219,22 @@ def run_etl(debug_mode: bool = False) -> None:
     """Main orchestrator function for the ETL process."""
     print(f"--- Starting Data Processing (InsectAPI) | DEBUG: {debug_mode} ---\n")
 
-    data_dir = Path("datasets")
-    data_dir.mkdir(parents=True, exist_ok=True)
+    DATASET_DIR.mkdir(parents=True, exist_ok=True)
 
-    output_parquet = data_dir / "insects.parquet"
-    output_csv = data_dir / "insects.csv"
+    output_parquet = DATASET_DIR / "insects.parquet"
+    output_csv = DATASET_DIR / "insects.csv"
 
     # Step 1: Download and extract raw data files
-    download_and_extract_ctfb_files(data_dir, debug_mode)
+    download_and_extract_ctfb_files(debug_mode)
 
     # Step 2: Process Data
-    df_taxons = process_taxons(data_dir)
+    df_taxons = process_taxons()
     if df_taxons.empty:
         print("Process aborted: No taxon data available.")
         return
 
     insects_ids = df_taxons["id"].tolist()
-    df_vernacular = process_vernacular_names(data_dir, insects_ids)
+    df_vernacular = process_vernacular_names(insects_ids)
 
     # Step 3: Merge
     df_insecta = merge_datasets(df_taxons, df_vernacular)
