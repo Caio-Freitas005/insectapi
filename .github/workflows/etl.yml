@@ -23,6 +23,7 @@ jobs:
         run: uv sync --frozen --no-dev
 
       - name: Run ETL and upload to Hugging Face
-        env: ${{ secrets.HF_TOKEN }}
+        env: 
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: 
           uv run python scripts/etl_insecta.py
