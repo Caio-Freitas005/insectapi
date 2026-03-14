@@ -1,5 +1,4 @@
 import json
-import shutil
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any
@@ -13,7 +12,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 DATASET_DIR = BASE_DIR / "datasets"
 DATASET_PATH = DATASET_DIR / "insects.parquet"
 
-HF_REPO= "CaioFreitas05/br_insecta"
+HF_REPO = "CaioFreitas05/br_insecta"
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -24,12 +24,12 @@ async def lifespan(app: FastAPI):
     if not DATASET_PATH.exists():
         print("File not found locally. Downloading from cloud via Hugging Face SDK...")
         try:
-            cached_file = hf_hub_download(
+            hf_hub_download(
                 repo_id=HF_REPO,
                 filename="insects.parquet",
                 repo_type="dataset",
+                local_dir=DATASET_DIR,
             )
-            shutil.copy(cached_file, DATASET_PATH)
             print("Download sucessfully finished!")
         except Exception as e:
             print(f"Critical error while downloading file: {e}")
