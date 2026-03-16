@@ -9,9 +9,8 @@ WORKDIR /app
 COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-dev
 
-# Copy Workdirs
+# Copy Workdir
 COPY api/ ./api/
-COPY scripts/ ./scripts/
 
 # Fallback for Render Port
 ENV PORT=8000
