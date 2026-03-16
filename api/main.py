@@ -13,7 +13,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 DATASET_DIR = BASE_DIR / "datasets"
 DATASET_PATH = DATASET_DIR / "insects.parquet"
 
-HF_REPO = os.getenv("HF_REPO", "CaioFreitas05/insectapi")
+HF_REPO = os.getenv("HF_REPO", "CaioFreitas05/br_insecta")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

@@ -12,7 +12,7 @@ from huggingface_hub import HfApi
 CTFB_ZIP_URL = (
     "https://ipt.jbrj.gov.br/jbrj/archive.do?r=catalogo_taxonomico_da_fauna_do_brasil"
 )
-HF_REPO = os.getenv("HF_REPO", "CaioFreitas05/insectapi")
+HF_REPO = os.getenv("HF_REPO", "CaioFreitas05/br_insecta")
 DATASET_DIR = Path("datasets")
 
 RANK_TRANSLATION = {
