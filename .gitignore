@@ -13,3 +13,4 @@ datasets/*.csv
 datasets/*.parquet
 datasets/*.txt
 
+.env
