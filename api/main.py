@@ -54,7 +54,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="InsectAPI",
     description="Read-Only API for CTFB Insecta taxonomic data.",
-    version="0.2.0",
+    version="0.2.1",
     lifespan=lifespan,
 )
 
