@@ -15,6 +15,7 @@ DATASET_PATH = DATASET_DIR / "insects.parquet"
 
 HF_REPO = os.getenv("HF_REPO", "CaioFreitas05/br_insecta")
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("Starting API and loading data to memory...")
@@ -53,7 +54,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="InsectAPI",
     description="Read-Only API for CTFB Insecta taxonomic data.",
-    version="0.1.0",
+    version="0.2.0",
     lifespan=lifespan,
 )
 
@@ -81,6 +82,7 @@ def root():
 
 @app.get("/insects/")
 async def get_insects(
+    skip: int = Query(0, description="How many results to skip"),
     limit: int = Query(10, description="results to return", ge=1, le=100),
 ) -> dict[str, Any]:
     """Return simple paginated insects list"""
@@ -89,10 +91,10 @@ async def get_insects(
     if df.empty:
         raise HTTPException(status_code=500, detail="Database unavailable.")
 
-    df_subset = df.head(limit)
+    df_subset = df.iloc[skip : skip + limit]
     results = format_dataframe(df_subset)
 
-    return {"total": len(results), "data": results}
+    return {"returned": len(results), "total": len(df), "data": results}
 
 
 @app.get("/insects/search")
