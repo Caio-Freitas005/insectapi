@@ -83,7 +83,7 @@ def root():
 @app.get("/insects/")
 async def get_insects(
     skip: int = Query(0, description="How many results to skip"),
-    limit: int = Query(10, description="results to return", ge=1, le=100),
+    limit: int = Query(10, description="How many results to return", ge=1, le=100),
 ) -> dict[str, Any]:
     """Return simple paginated insects list"""
     df: pd.DataFrame = app.state.df_insecta
