@@ -112,6 +112,6 @@ Contributions from the community are welcome! Whether it is a bug report, a new 
 
 This project is licensed under the terms found in the [LICENSE](https://github.com/Caio-Freitas005/insectapi?tab=MIT-1-ov-file) file.
 
-## SECURITY 
+## Security
 
-To report a security vulnerability read [SECURITY.md](https://github.com/Caio-Freitas005/insectapi?tab=security-ov-file)
+To report a security vulnerability read [SECURITY.md](https://github.com/Caio-Freitas005/insectapi?tab=security-ov-file).
