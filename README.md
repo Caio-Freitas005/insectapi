@@ -46,8 +46,16 @@ To run this project locally, ensure you have the following installed:
 ### Local Installation
 
 1. Clone the repository:
+
+HTTPS
 ```bash
 git clone https://github.com/Caio-Freitas005/insectapi.git
+cd insectapi
+```
+
+SSH
+```bash
+git clone git@github.com:Caio-Freitas005/insectapi.git
 cd insectapi
 ```
 
