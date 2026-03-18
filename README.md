@@ -33,7 +33,7 @@ The biological and taxonomic data used in this project are in the public domain 
 * **Framework:** FastAPI
 * **Data Processing:** Pandas (Parquet format)
 * **Package Manager:** uv
-* **Infrastructure:** Docker, Hugging Face Hub, GitHub Actions
+* **Infrastructure:** Docker, Hugging Face Hub, GitHub Actions, Render (deploy)
 
 
 ## Getting Started
