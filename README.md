@@ -3,7 +3,6 @@
 ![Version](https://img.shields.io/badge/version-0.2.1-blue.svg)
 ![Python](https://img.shields.io/badge/python-3.13-yellow.svg)
 ![FastAPI](https://img.shields.io/badge/framework-FastAPI-009688.svg)
-![Build](https://img.shields.io/badge/build-passing-brightgreen.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 
 API to access brazilian Insecta taxonomic data. This project provides a streamlined, RESTful interface to query and search for insect taxonomic information using a modern Python stack.
