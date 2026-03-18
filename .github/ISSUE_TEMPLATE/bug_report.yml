@@ -1,0 +1,49 @@
+name: Bug Report
+description: Report a bug or an unexpected behavior in the API.
+title: "[BUG]: "
+labels: ["bug"]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting an issue with InsectAPI! Please provide as much detail as possible so we can reproduce and fix the bug.
+  
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what the bug is.
+      placeholder: E.g., The /insects/search endpoint returns a 500 error when searching for the genus "Apis" instead of an empty list.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: How can we reproduce this bug? Please provide the exact URL path or code snippet.
+      placeholder: |
+        1. Run the API locally using 'uv run uvicorn api.main:app'
+        2. Send a GET request to 'http://127.0.0.1:8000/insects/search?q=Apis'
+        3. See the error
+    validations:
+      required: true
+
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Which Python version and OS are you using? Are you using Docker?
+      placeholder: e.g., Python 3.13.0 on Ubuntu 22.04 / Docker image
+    validations:
+      required: true
+      
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant Log Output
+      description: Please copy and paste any relevant logs from the Uvicorn terminal or Docker container.
+      render: shell
+    validations:
+      required: false

@@ -1,0 +1,37 @@
+name: Feature Request
+description: Suggest an idea, a new endpoint, new taxonomic data filters or columns at the dataset.
+title: "[FEATURE]: "
+labels: ["enhancement"]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for helping InsectAPI grow! 
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Is your feature request related to a problem?
+      description: A clear and concise description of what the problem is.
+      placeholder: E.g., I'm always frustrated when I cannot filter insects by their specific Family or Order directly in the GET route.
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Describe the solution you'd like
+      description: A clear and concise description of what you want to happen.
+      placeholder: E.g., Add query parameters like ?order=Coleoptera and ?family=Cerambycidae to the /insects/ endpoint.
+    validations:
+      required: true
+      
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Describe alternatives you've considered
+      description: Any other ways you've thought about solving this.
+      placeholder: E.g., Downloading the entire .parquet file and filtering it locally using Pandas.
+    validations:
+      required: false
