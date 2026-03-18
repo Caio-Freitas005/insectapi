@@ -29,8 +29,16 @@ We use modern Python tooling to keep the environment fast and reproducible.
 1. **Fork and Clone:** 
 
 Fork the repository to your GitHub account and clone it locally.
+
+HTTPS
 ```bash
-git clone https://github.com/Caio-Freitas005/insectapi.git
+git clone https://github.com/YOUR_USERNAME/insectapi.git
+cd insectapi
+```
+
+SSH
+```bash
+git clone git@github.com:YOUR_USERNAME/insectapi.git
 cd insectapi
 ```
 
