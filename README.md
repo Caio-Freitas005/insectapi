@@ -114,4 +114,4 @@ This project is licensed under the terms found in the [LICENSE](https://github.c
 
 ## Security
 
-To report a security vulnerability read [SECURITY.md](https://github.com/Caio-Freitas005/insectapi?tab=security-ov-file).
+To understand how to report a security vulnerability read [SECURITY.md](https://github.com/Caio-Freitas005/insectapi?tab=security-ov-file).
